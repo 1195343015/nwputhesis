@@ -74,6 +74,7 @@ jobs:
           path: |
             master.pdf
             bachelor.pdf
+            phd.pdf
           retention-days: 30
 
   test-ubuntu:
