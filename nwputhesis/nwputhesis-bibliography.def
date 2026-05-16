@@ -4,20 +4,7 @@
 %% 参考文献处理
 %%-----------------------------------------------------------------------------%
 \ExplSyntaxOn
-% 中文全角标点支持（gb7714-2025 提供，此处为 gb7714-2015 提供降级）
-\cs_if_exist:cF { gbpunctcomma } { \cs_new:Npn \gbpunctcomma { \addcomma\addspace } }
-\cs_if_exist:cF { gbpunctcommalanen } { \cs_new:Npn \gbpunctcommalanen { \addcomma\addspace } }
-\cs_if_exist:cF { gbpunctcolon } { \cs_new:Npn \gbpunctcolon { \addcolon\addspace } }
-\cs_if_exist:cF { gbpunctcolonlanen } { \cs_new:Npn \gbpunctcolonlanen { \addcolon\addspace } }
-\cs_if_exist:cF { gbpunctdot } { \cs_new:Npn \gbpunctdot { \adddot\addspace } }
-\cs_if_exist:cF { gbpunctdotlanen } { \cs_new:Npn \gbpunctdotlanen { \adddot\addspace } }
-\cs_new:Npn \nwpucolon { \iffieldequalstr{userd}{chinese}{\gbpunctcolon}{\gbpunctcolonlanen} }
-\cs_new:Npn \nwp comma { \iffieldequalstr{userd}{chinese}{\gbpunctcomma}{\gbpunctcommalanen} }
-\cs_new:Npn \nwpudot { \iffieldequalstr{userd}{chinese}{\gbpunctdot}{\gbpunctdotlanen} }
-\renewcommand*{\bibfont}{\nwpuBodyFont}
-\str_if_eq:VnF \l__nwpu_bibindent_tl { hanging } {
-    \dim_set:Nn \biblabelsep { \nwpuBibLabelSep }
-}
+\dim_set:Nn \biblabelsep { \nwpuBibLabelSep }                %
 \dim_new:N \l__nwpu_bib_firstline_indent_dim
 \dim_set:Nn \l__nwpu_bib_firstline_indent_dim { 24pt }
 \dim_new:N \l__nwpu_bib_label_dim
@@ -37,6 +24,26 @@
   }
 \DeclareFieldFormat[patent]{title}{#1}
 \DeclareFieldFormat[patent]{number}{\nwpuPatentNumberAllowBreaks{#1}}
+% 中文全角标点支持（gb7714-2025 提供，此处为 gb7714-2015 提供降级）
+\cs_if_exist:cF { gbpunctcomma } { \cs_new:Npn \gbpunctcomma { \addcomma\addspace } }
+\cs_if_exist:cF { gbpunctcommalanen } { \cs_new:Npn \gbpunctcommalanen { \addcomma\addspace } }
+\cs_if_exist:cF { gbpunctcolon } { \cs_new:Npn \gbpunctcolon { \addcolon\addspace } }
+\cs_if_exist:cF { gbpunctcolonlanen } { \cs_new:Npn \gbpunctcolonlanen { \addcolon\addspace } }
+\cs_if_exist:cF { gbpunctdot } { \cs_new:Npn \gbpunctdot { \adddot\addspace } }
+\cs_if_exist:cF { gbpunctdotlanen } { \cs_new:Npn \gbpunctdotlanen { \adddot\addspace } }
+\cs_new:Npn \nwpucolon { \iffieldequalstr{userd}{chinese}{\gbpunctcolon}{\gbpunctcolonlanen} }
+\cs_new:Npn \nwp comma { \iffieldequalstr{userd}{chinese}{\gbpunctcomma}{\gbpunctcommalanen} }
+\cs_new:Npn \nwpudot { \iffieldequalstr{userd}{chinese}{\gbpunctdot}{\gbpunctdotlanen} }
+\renewcommand*{\bibfont}{\nwpuBodyFont}
+\tl_if_exist:NT \l__nwpu_bibindent_tl {
+    \str_if_eq:VnF \l__nwpu_bibindent_tl { hanging } {
+        \dim_set:Nn \biblabelsep { \nwpuBibLabelSep }
+    }
+}
+\renewcommand*{\multiciterangedelim}{\textasciitilde}
+\renewcommand*{\multicitesubentryrangedelim}{\multiciterangedelim}
+\renewcommand*{\superciterangedelim}{\textasciitilde}
+\renewcommand*{\supercitesubentryrangedelim}{\superciterangedelim}
 \renewbibmacro*{title}{%
 \ifboolexpr{%
     test{\iffieldundef{title}}%
@@ -155,7 +162,7 @@
       not test {\iffieldundef{month}}
       or
       not test {\iffieldundef{day}}
-  }{
+  }{%
     \setunit*{\nwp comma}%
     \usebibmacro{newsdate}%
   }{}%
@@ -180,6 +187,50 @@
     {}%
   \usebibmacro{annotation}\usebibmacro{finentry}%
 }
+\newbibmacro*{nwpu:otherdate}{%
+  \iffieldundef{year}
+    {}
+    {\thefield{year}%
+     \iffieldundef{month}
+       {}
+       {-\ifnum\thefield{month}<10 0\fi\thefield{month}%
+        \iffieldundef{day}
+          {}
+          {-\ifnum\thefield{day}<10 0\fi\thefield{day}}}}%
+}
+\newbibmacro*{nwpu:otherurldate}{%
+  \iffieldundef{urlyear}
+    {}
+    {\thefield{urlyear}%
+     \iffieldundef{urlmonth}
+       {}
+       {-\ifnum\thefield{urlmonth}<10 0\fi\thefield{urlmonth}%
+        \iffieldundef{urlday}
+          {}
+          {-\ifnum\thefield{urlday}<10 0\fi\thefield{urlday}}}}%
+}
+\newbibmacro*{nwpu:otherdate+urldate}{%
+  \ifboolexpr{
+      test {\iffieldundef{year}}
+      and
+      test {\iffieldundef{urlyear}}
+  }{}{%
+    \printtext{%
+      \begingroup
+      \xeCJKsetup{CJKecglue={}}%
+      \usebibmacro{nwpu:otherdate}%
+      \ifboolexpr{
+          test {\iffieldundef{year}}
+          and
+          test {\iffieldundef{month}}
+          and
+          test {\iffieldundef{day}}
+      }{}{\iffieldundef{urlyear}{}{／}}%
+      \usebibmacro{nwpu:otherurldate}%
+      \endgroup
+    }%
+  }%
+}
 \DeclareBibliographyDriver{other}{%
   \usebibmacro{bibindex}%
   \usebibmacro{begentry}%
@@ -202,15 +253,10 @@
   \newunit
   \printfield{note}%
   \newunit\newblock
-  \ifboolexpr{
-      not test {\iffieldundef{year}}
-      or
-      not test {\iffieldundef{month}}
-      or
-      not test {\iffieldundef{day}}
-  }{\usebibmacro{newsdate}}{}%
+  \usebibmacro{nwpu:otherdate+urldate}%
   \usebibmacro{chapter+pages}%
-  \usebibmacro{doi+eprint+url}%
+  \newunit\newblock
+  \printfield{url}%
   \newunit\newblock
   \usebibmacro{addendum+pubstate}%
   \setunit{\bibpagerefpunct}\newblock
@@ -316,30 +362,19 @@
 \ExplSyntaxOn
 \cs_new_protected:Npn \nwpu@bibitemcmd {%
     \addvspace{\bibitemsep}%
-    \leavevmode
-    \str_case:Vn \l__nwpu_bibindent_tl
-      {
-        { auto } {
-          \nwpu_if_bachelor:TF
-            { \hspace*{0pt} }
-            { \hspace*{\l__nwpu_bib_firstline_indent_dim} }
-        }
-        { firstline } { \hspace*{\l__nwpu_bib_firstline_indent_dim} }
-        { none }      { \hspace*{0pt} }
-      }
+    \leavevmode%
+    \nwpu_if_bachelor:TF
+        { \hspace*{0pt} }
+        { \hspace*{\l__nwpu_bib_firstline_indent_dim} }
     \mkgbnumlabel{\printfield{labelnumber}}\hspace{\nwpuBibLabelNumberGap}}
-% hanging 模式不覆盖环境，使用 gb7714-2015 默认的 list 环境
-\str_if_eq:VnF \l__nwpu_bibindent_tl { hanging } {
-    \defbibenvironment{bibliography}
-        {\begingroup\setlength{\parindent}{\nwpuBibParIndent}\setlength{\emergencystretch}{\nwpuBibEmergencyStretch}\sloppy}
-        {\endgroup}
-        {\nwpu@bibitemcmd}
-}
+\defbibenvironment{bibliography}
+    {\begingroup\setlength{\parindent}{\nwpuBibParIndent}\setlength{\emergencystretch}{\nwpuBibEmergencyStretch}\sloppy}
+    {\endgroup}
+    {\nwpu@bibitemcmd}
 \AtBeginBibliography{                                        %
     \nwpuBodyFont                                           %
-    \str_if_eq:VnF \l__nwpu_bibindent_tl { hanging } {
-        \setlength{\bibitemsep}{\nwpuBibItemSep}                %
-    }
+    \setlength{\bibitemsep}{\nwpuBibItemSep}                %
+    \setlength{\bibhang}{\nwpuBibHang}                      %
 }                                                           %
 \cs_set_eq:NN \nwpu@oldprintbibliography \printbibliography            %
 \RenewDocumentCommand{\printbibliography}{O{}}{             %
