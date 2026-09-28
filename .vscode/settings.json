@@ -32,6 +32,7 @@
         }
     ],
     "latex-workshop.latex.recipe.default": "xelatex + biber + xelatex x 2",
+    "latex-workshop.latex.outDir": "%DIR%/build",
     "files.associations": {
         "*.def": "latex"
     }
