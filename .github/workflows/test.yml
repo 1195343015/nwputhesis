@@ -19,6 +19,9 @@ on:
       - ".github/ISSUE_TEMPLATE/**"
       - ".vscode/**"
       - "graduate.pdf"
+  schedule:
+    # 每周一 03:17 UTC 定时构建，刷新 PDF 产物，避免 nightly.link 预览链接因产物过期失效
+    - cron: "17 3 * * 1"
   workflow_dispatch:
 
 env:
@@ -70,10 +73,10 @@ jobs:
           path: |
             build/graduate.pdf
             build/bachelor.pdf
-          retention-days: 30
+          retention-days: 90
 
   build-cross-platform:
-    if: ${{ !contains(github.event.head_commit.message, 'ci skip') }}
+    if: ${{ github.event_name != 'schedule' && !contains(github.event.head_commit.message, 'ci skip') }}
     strategy:
       fail-fast: false
       matrix:
