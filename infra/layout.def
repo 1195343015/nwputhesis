@@ -177,7 +177,7 @@
             \cs_set:Npn \CharParenLeft {(}
             \cs_set:Npn \CharParenRight {)\allowbreak}
         }
-        { \ExecuteBibliographyOptions{gbpunctwidth=bylan} }
+        { \ExecuteBibliographyOptions{gbpunctwidth=half} }
 }
 \nwpu_if_graduate:TF{%
     \DefineBibliographyStrings{english}{in={}}%

@@ -16,21 +16,27 @@
 \cs_new:Npn \nwpudot { \iffieldequalstr{userd}{chinese}{\gbpunctdot}{\gbpunctdotlanen} }
 % 本科参考文献中文标点使用全角
 \nwpu_if_bachelor:T {
-  \cs_set:Npn \gbpunctcomma { \mbox{，}\allowbreak }
-  \cs_set:Npn \gbpunctcolon { \mbox{：}\allowbreak }
-  \cs_set:Npn \gbpunctdot { \mbox{．}\allowbreak }
-  \cs_set:Npn \gbpunctcommalanen { \addcomma\addspace }
-  \cs_set:Npn \gbpunctcolonlanen { \addcolon\addspace }
-  \cs_set:Npn \gbpunctdotlanen { \adddot\addspace }
-  \cs_new:Npn \nwpu_bib_comma: { \iffieldequalstr{userd}{chinese}{\gbpunctcomma}{\gbpunctcommalanen} }
-  \def\newunitpunct{%
-    \iffieldequalstr{userd}{chinese}{\gbpunctdot}{\gbpunctdotlanen}}
-  \renewcommand{\pubdatadelim}{\setunit*{\nwpu_bib_comma:}}
-  \renewcommand{\locnopubdelim}{\setunit*{\nwpu_bib_comma:}}
+  \cs_gset:Npn \gbpunctcomma { \mbox{，}\allowbreak }
+  \cs_gset:Npn \gbpunctcolon { \mbox{：}\allowbreak }
+  \cs_gset:Npn \gbpunctdot { \mbox{．}\allowbreak }
+  % 本科：将 biblatex 底层半角标点命令统一重定义为全角（\cs_gset 全局生效，突破本科条件组的分组限制），覆盖所有条目类型与标准宏
+  \cs_gset_protected:Npn \addcomma { \mbox{，}\allowbreak }
+  \cs_gset_protected:Npn \addcolon { \mbox{：}\allowbreak }
+  \cs_gset_protected:Npn \addsemicolon { \mbox{；}\allowbreak }
+  % 本科统一全角：英文（lanen）标点同样使用全角，不区分中英文文献
+  \cs_gset:Npn \gbpunctcommalanen { \mbox{，}\allowbreak }
+  \cs_gset:Npn \gbpunctcolonlanen { \mbox{：}\allowbreak }
+  \cs_gset:Npn \gbpunctdotlanen { \mbox{．}\allowbreak }
+  \cs_gset:Npn \nwpu_bib_comma: { \iffieldequalstr{userd}{chinese}{\gbpunctcomma}{\gbpunctcommalanen} }
+  \cs_gset:Npn \newunitpunct { \iffieldequalstr{userd}{chinese}{\gbpunctdot}{\gbpunctdotlanen}}
+  \cs_gset:Npn \pubdatadelim { \setunit*{\nwpu_bib_comma:}}
+  \cs_gset:Npn \locnopubdelim { \setunit*{\nwpu_bib_comma:}}
   \DeclareFieldFormat{title}{%
-    \iffieldequalstr{userd}{chinese}{#1}{#1\adddot\addthinspace}}
+    \iffieldequalstr{userd}{chinese}{#1}{#1}}
   \DeclareFieldFormat[article,patent,thesis,unpublished]{title}{%
-    \iffieldequalstr{userd}{chinese}{#1}{#1\adddot\addthinspace}}
+    \iffieldequalstr{userd}{chinese}{#1}{#1}}
+  % 英文姓名 Family,Given 之间的逗号统一为全角
+  \cs_gset:Npn \revsdnamepunct { \gbpunctcomma }
   \renewbibmacro*{name:gbuppercase}[4]{\bibauthorfont%
     \gbcaselocalset%
     \ifuseprefix%
@@ -43,7 +49,7 @@
          \ifprefchar{}{\bibnamedelimc}}%
        \mkbibnamefamily{\MakeCapital{#1}}\isdot%
        \ifdefvoid{#2}{}{\revsdnamepunct\bibnamedelimd\mkbibnamegiven{\MakeUppercase{#2}}\isdot}%
-       \ifdefvoid{#4}{}{\addcomma\bibnamedelimd\mkbibnamesuffix{#4}\isdot}}%
+       \ifdefvoid{#4}{}{\gbpunctcomma\bibnamedelimd\mkbibnamesuffix{#4}\isdot}}%
       {\usebibmacro{name:delim}{#1}%
        \usebibmacro{name:hook}{#1}%
        \mkbibnamefamily{\MakeCapital{#1}}\isdot%
@@ -54,7 +60,7 @@
          {}{\revsdnamepunct}%
        \ifdefvoid{#2}{}{\bibnamedelimd\mkbibnamegiven{\MakeUppercase{#2}}\isdot}%
        \ifdefvoid{#3}{}{\bibnamedelimd\mkbibnameprefix{#3}\isdot}%
-       \ifdefvoid{#4}{}{\addcomma\bibnamedelimd\mkbibnamesuffix{#4}\isdot}}}
+       \ifdefvoid{#4}{}{\gbpunctcomma\bibnamedelimd\mkbibnamesuffix{#4}\isdot}}}
   \renewbibmacro*{journal+issuetitle}{\bibpubfont%
     \usebibmacro{journal}%
     \iffieldundef{journaltitle}{}{\setunit*{\nwpu_bib_comma:}}%
@@ -67,14 +73,13 @@
     \iffieldundef{volume}{}{\setunit*{\nwpu_bib_comma:}}%
     \usebibmacro{issue}%
     \usebibmacro{volume+number+eid}}
-  \renewcommand*{\subtitlepunct}{%
-    \iffieldequalstr{userd}{chinese}{\gbpunctcolon}{\gbpunctcolonlanen}}
-  \renewcommand{\publocpunct}{%
-    \iffieldequalstr{userd}{chinese}{\gbpunctcolon}{\gbpunctcolonlanen}}
+  \cs_gset:Npn \subtitlepunct { \iffieldequalstr{userd}{chinese}{\gbpunctcolon}{\gbpunctcolonlanen}}
+  \cs_gset:Npn \publocpunct { \iffieldequalstr{userd}{chinese}{\gbpunctcolon}{\gbpunctcolonlanen}}
+  \cs_gset:Npn \finentrypunct { \mbox{．}\allowbreak }
   \DeclareDelimFormat[bib,biblist]{multinamedelim}{%
-    \iffieldequalstr{userd}{chinese}{\gbpunctcomma}{\addcomma\space}}
+    \iffieldequalstr{userd}{chinese}{\gbpunctcomma}{\gbpunctcomma}}
   \DeclareDelimFormat[bib,biblist]{finalnamedelim}{%
-    \iffieldequalstr{userd}{chinese}{\gbpunctcomma}{\addcomma\space}}
+    \iffieldequalstr{userd}{chinese}{\gbpunctcomma}{\gbpunctcomma}}
   \DeclareDelimFormat[bib,biblist]{nameyeardelim}{%
     \iffieldequalstr{userd}{chinese}{\gbpunctcomma}{\gbpunctcommalanen}}
   \DeclareDelimFormat[bib,biblist]{andothersdelim}{%
@@ -364,7 +369,7 @@
             {%
                 \iffieldequalstr{userd}{chinese}
                     {：第~\printfield{volume}~卷}
-                    {\addcolon\space vol.\space\printfield{volume}}%
+                    {\mbox{：}\allowbreak vol.\space\printfield{volume}}%
             }%
     }
     \newbibmacro*{nwpu:bachelorbooktitle}{%
@@ -385,7 +390,7 @@
         \setunit{\nwpudot}%
         \iffieldequalstr{userd}{chinese}
             {\printtext{见；}}
-            {\printtext{In\addsemicolon\space}}%
+            {\printtext{In\mbox{；}\allowbreak}}%
     }
     \DeclareBibliographyDriver{nwpubachelorconf}{%
         \usebibmacro{bibindex}%
